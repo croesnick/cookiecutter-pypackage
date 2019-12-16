@@ -10,11 +10,29 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [{%- if cookiecutter.command_line_interface|lower == 'click' %}'Click>=7.0',{%- endif %} ]
+requirements = [{%- if cookiecutter.command_line_interface|lower == 'click' %}'Click>=7.0',{%- endif %}]
 
-setup_requirements = [{%- if cookiecutter.use_pytest == 'y' %}'pytest-runner',{%- endif %} ]
+tests_require = [
+    'coverage~=4.5.4',
+    'flake8~=3.7.9',
+    'pytest~=5.3.2',
+    'pytest-cov~=2.8.1',
+    'mypy==0.750',
+]
 
-test_requirements = [{%- if cookiecutter.use_pytest == 'y' %}'pytest>=3',{%- endif %} ]
+docs_require = [
+    'Sphinx~=2.3.0',
+]
+
+dev_requires = tests_require + docs_require + [
+    'pip==19.2.3',
+    'bump2version~=0.5.11',
+    'wheel==0.33.6',
+    'tox==3.14.0',
+    'twine==1.14.0',
+    {% if cookiecutter.command_line_interface|lower == 'click' -%}
+    'Click==7.0',{% endif %}
+]
 
 {%- set license_classifiers = {
     'MIT license': 'License :: OSI Approved :: MIT License',
@@ -59,9 +77,11 @@ setup(
     keywords='{{ cookiecutter.project_slug }}',
     name='{{ cookiecutter.project_slug }}',
     packages=find_packages(include=['{{ cookiecutter.project_slug }}', '{{ cookiecutter.project_slug }}.*']),
-    setup_requires=setup_requirements,
-    test_suite='tests',
-    tests_require=test_requirements,
+    extras_require={
+        'dev': dev_requires,
+        'docs': docs_require,
+        'tests': tests_require,
+    },
     url='https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}',
     version='{{ cookiecutter.version }}',
     zip_safe=False,
