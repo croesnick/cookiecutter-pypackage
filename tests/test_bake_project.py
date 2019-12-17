@@ -5,7 +5,9 @@ import shlex
 import subprocess
 import sys
 from contextlib import contextmanager
+from pathlib import Path
 
+import pytest
 import yaml
 from click.testing import CliRunner
 from cookiecutter.utils import rmtree
@@ -39,14 +41,20 @@ def bake_in_temp_dir(cookies, *args, **kwargs):
         rmtree(str(result.project))
 
 
-def run_inside_dir(command, dirpath):
-    """
-    Run a command from inside a given directory, returning the exit status
-    :param command: Command that will be executed
-    :param dirpath: String, path of the directory the command is being run.
-    """
-    with inside_dir(dirpath):
-        return subprocess.check_call(shlex.split(command), env={'PYTHONPATH': 'src'})
+@pytest.fixture
+def run_inside_dir(monkeypatch):
+    def _run(command, dir_path):
+        """
+        Run a command from inside a given directory, returning the exit status
+        :param command: Command that will be executed
+        :param dirpath: String, path of the directory the command is being run.
+        """
+        with inside_dir(dir_path):
+            path = Path(dir_path, 'src').absolute()
+            monkeypatch.setenv('PYTHONPATH', str(path), prepend=os.pathsep)
+            return subprocess.check_call(shlex.split(command))
+
+    return _run
 
 
 def check_output_inside_dir(command, dirpath):
@@ -83,31 +91,31 @@ def test_bake_with_defaults(cookies):
         assert 'tests' in found_toplevel_files
 
 
-def test_bake_and_run_tests(cookies):
+def test_bake_and_run_tests(cookies, run_inside_dir):
     with bake_in_temp_dir(cookies) as result:
         assert result.project.isdir()
-        assert run_inside_dir('python setup.py test', str(result.project)) == 0
+        assert run_inside_dir('pytest', str(result.project)) == 0
         print("test_bake_and_run_tests path", str(result.project))
 
 
-def test_bake_withspecialchars_and_run_tests(cookies):
+def test_bake_withspecialchars_and_run_tests(cookies, run_inside_dir):
     """Ensure that a `full_name` with double quotes does not break setup.py"""
     with bake_in_temp_dir(
         cookies,
         extra_context={'full_name': 'name "quote" name'}
     ) as result:
         assert result.project.isdir()
-        assert run_inside_dir('python setup.py test', str(result.project)) == 0
+        assert run_inside_dir('pytest', str(result.project)) == 0
 
 
-def test_bake_with_apostrophe_and_run_tests(cookies):
+def test_bake_with_apostrophe_and_run_tests(cookies, run_inside_dir):
     """Ensure that a `full_name` with apostrophes does not break setup.py"""
     with bake_in_temp_dir(
         cookies,
         extra_context={'full_name': "O'connor"}
     ) as result:
         assert result.project.isdir()
-        assert run_inside_dir('python setup.py test', str(result.project)) == 0
+        assert run_inside_dir('pytest', str(result.project)) == 0
 
 
 # def test_bake_and_run_travis_pypi_setup(cookies):
@@ -207,7 +215,7 @@ def test_bake_not_open_source(cookies):
         assert 'License' not in result.project.join('README.rst').read()
 
 
-def test_using_pytest(cookies):
+def test_using_pytest(cookies, run_inside_dir):
     with bake_in_temp_dir(cookies) as result:
         assert result.project.isdir()
         test_file_path = result.project.join(
@@ -216,7 +224,7 @@ def test_using_pytest(cookies):
         lines = test_file_path.readlines()
 
         assert "import pytest" in ''.join(lines)
-        assert run_inside_dir('python -m pytest', str(result.project)) == 0
+        assert run_inside_dir('pytest', str(result.project)) == 0
 
 
 # def test_project_with_hyphen_in_module_name(cookies):
