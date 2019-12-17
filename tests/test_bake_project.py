@@ -46,7 +46,7 @@ def run_inside_dir(command, dirpath):
     :param dirpath: String, path of the directory the command is being run.
     """
     with inside_dir(dirpath):
-        return subprocess.check_call(shlex.split(command))
+        return subprocess.check_call(shlex.split(command), env={'PYTHONPATH': 'src'})
 
 
 def check_output_inside_dir(command, dirpath):
@@ -66,7 +66,7 @@ def project_info(result):
     """Get toplevel dir, project_slug, and project dir from baked cookies"""
     project_path = str(result.project)
     project_slug = os.path.split(project_path)[-1]
-    project_dir = os.path.join(project_path, project_slug)
+    project_dir = os.path.join(project_path, 'src', project_slug)
     return project_path, project_slug, project_dir
 
 
@@ -78,7 +78,7 @@ def test_bake_with_defaults(cookies):
 
         found_toplevel_files = [f.basename for f in result.project.listdir()]
         assert 'setup.py' in found_toplevel_files
-        assert 'python_boilerplate' in found_toplevel_files
+        assert 'src' in found_toplevel_files
         assert 'tox.ini' in found_toplevel_files
         assert 'tests' in found_toplevel_files
 
@@ -86,7 +86,7 @@ def test_bake_with_defaults(cookies):
 def test_bake_and_run_tests(cookies):
     with bake_in_temp_dir(cookies) as result:
         assert result.project.isdir()
-        run_inside_dir('python setup.py test', str(result.project)) == 0
+        assert run_inside_dir('python setup.py test', str(result.project)) == 0
         print("test_bake_and_run_tests path", str(result.project))
 
 
@@ -97,7 +97,7 @@ def test_bake_withspecialchars_and_run_tests(cookies):
         extra_context={'full_name': 'name "quote" name'}
     ) as result:
         assert result.project.isdir()
-        run_inside_dir('python setup.py test', str(result.project)) == 0
+        assert run_inside_dir('python setup.py test', str(result.project)) == 0
 
 
 def test_bake_with_apostrophe_and_run_tests(cookies):
@@ -107,7 +107,7 @@ def test_bake_with_apostrophe_and_run_tests(cookies):
         extra_context={'full_name': "O'connor"}
     ) as result:
         assert result.project.isdir()
-        run_inside_dir('python setup.py test', str(result.project)) == 0
+        assert run_inside_dir('python setup.py test', str(result.project)) == 0
 
 
 # def test_bake_and_run_travis_pypi_setup(cookies):
@@ -214,8 +214,9 @@ def test_using_pytest(cookies):
             'tests/test_python_boilerplate.py'
         )
         lines = test_file_path.readlines()
+
         assert "import pytest" in ''.join(lines)
-        run_inside_dir('python -m pytest', str(result.project)) == 0
+        assert run_inside_dir('python -m pytest', str(result.project)) == 0
 
 
 # def test_project_with_hyphen_in_module_name(cookies):

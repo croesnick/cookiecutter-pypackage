@@ -77,7 +77,8 @@ setup(
     include_package_data=True,
     keywords='{{ cookiecutter.project_slug }}',
     name='{{ cookiecutter.project_slug }}',
-    packages=find_packages(include=['{{ cookiecutter.project_slug }}', '{{ cookiecutter.project_slug }}.*']),
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
     extras_require={
         'dev': dev_requires,
         'docs': docs_require,
