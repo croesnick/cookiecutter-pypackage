@@ -22,6 +22,7 @@ tests_require = [
 
 docs_require = [
     'Sphinx~=2.3.0',
+    'sphinx-autodoc-typehints~=1.10.3',
 ]
 
 dev_requires = tests_require + docs_require + [
