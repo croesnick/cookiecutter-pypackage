@@ -125,7 +125,7 @@ def test_bake_with_apostrophe_and_run_tests(cookies, run_inside_dir):
 #
 #         # when:
 #         travis_setup_cmd = ('python travis_pypi_setup.py'
-#                             ' --repo audreyr/cookiecutter-pypackage'
+#                             ' --repo croesnick/cookiecutter-pypackage'
 #                             ' --password invalidpass')
 #         run_inside_dir(travis_setup_cmd, project_path)
 #         # then:
@@ -236,7 +236,7 @@ def test_using_pytest(cookies, run_inside_dir):
 #
 #     # when:
 #     travis_setup_cmd = ('python travis_pypi_setup.py'
-#                         ' --repo audreyr/cookiecutter-pypackage'
+#                         ' --repo croesnick/cookiecutter-pypackage'
 #                         ' --password invalidpass')
 #     run_inside_dir(travis_setup_cmd, project_path)
 #
