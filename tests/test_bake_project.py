@@ -167,33 +167,14 @@ def test_bake_without_author_file(cookies):
         with open(str(docs_index_path)) as index_file:
             assert 'contributing\n   history' in index_file.read()
 
-        # Check that
-        manifest_path = result.project.join('MANIFEST.in')
-        with open(str(manifest_path)) as manifest_file:
-            assert 'AUTHORS.rst' not in manifest_file.read()
-
-
-def test_make_help(cookies):
-    with bake_in_temp_dir(cookies) as result:
-        # The supplied Makefile does not support win32
-        if sys.platform != "win32":
-            output = check_output_inside_dir(
-                'make help',
-                str(result.project)
-            )
-            assert b"check code coverage quickly with the default Python" in \
-                   output
-
 
 def test_bake_selecting_license(cookies):
     license_strings = {
-        'MIT license': 'MIT ',
-        'BSD license': 'Redistributions of source code must retain the ' +
+        'MIT': 'MIT ',
+        'BSD-4-Clause': 'Redistributions of source code must retain the ' +
                        'above copyright notice, this',
-        'ISC license': 'ISC License',
-        'Apache Software License 2.0':
-            'Licensed under the Apache License, Version 2.0',
-        'GNU General Public License v3': 'GNU GENERAL PUBLIC LICENSE',
+        'Apache-2.0': 'Licensed under the Apache License, Version 2.0',
+        'GPL-3.0-or-later': 'GNU GENERAL PUBLIC LICENSE',
     }
     for license, target_string in license_strings.items():
         with bake_in_temp_dir(
@@ -269,7 +250,7 @@ def test_bake_with_console_script_files(cookies):
 
     setup_path = os.path.join(project_path, 'pyproject.toml')
     with open(setup_path, 'r') as setup_file:
-        assert 'entry_points' in setup_file.read()
+        assert 'console_scripts' in setup_file.read()
 
 
 def test_bake_with_argparse_console_script_files(cookies):
@@ -281,7 +262,7 @@ def test_bake_with_argparse_console_script_files(cookies):
 
     setup_path = os.path.join(project_path, 'pyproject.toml')
     with open(setup_path, 'r') as setup_file:
-        assert 'entry_points' in setup_file.read()
+        assert 'console_scripts' in setup_file.read()
 
 
 def test_bake_with_console_script_cli(cookies):
