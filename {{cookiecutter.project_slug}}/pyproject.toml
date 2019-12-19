@@ -1,6 +1,82 @@
 [build-system]
-requires = [
-    'setuptools>=40.6.0',
-    'wheel',
+requires = ["poetry~=1.0.0"]
+build-backend = "poetry.masonry.api"
+
+{%- set license_classifiers = {
+    'MIT': 'License :: OSI Approved :: MIT License',
+    'BSD-4-Clause': 'License :: OSI Approved :: BSD License',
+    'Apache-2.0': 'License :: OSI Approved :: Apache Software License',
+    'GPL-3.0-or-later': 'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
+} %}
+
+[tool.poetry]
+name = "{{ cookiecutter.project_slug }}"
+version = "{{ cookiecutter.version }}"
+description = "{{ cookiecutter.project_short_description }}"
+
+license = "{{ cookiecutter.open_source_license }}"
+
+authors = ["{{ cookiecutter.full_name.replace('\"', '\\\"') }} <{{ cookiecutter.email }}>"]
+
+readme = "README.rst"
+documentation = "https://{{ cookiecutter.project_slug }}.readthedocs.org"
+repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
+
+keywords = ["{{ cookiecutter.project_slug }}"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+{%- if cookiecutter.open_source_license in license_classifiers %}
+    "{{ license_classifiers[cookiecutter.open_source_license] }}",
+{%- endif %}
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Typing :: Typed",
 ]
-build-backend = 'setuptools.build_meta'
+
+packages = [
+    { include = "{{ cookiecutter.project_slug }}", from = "src" },
+]
+include = [
+    "LICENSE",
+    "setup.cfg",
+    "*.rst",
+    "*.toml",
+    "*.ini",
+    "*.yml",
+]
+
+{%- if 'no' not in cookiecutter.command_line_interface|lower %}
+[tool.poetry.plugins."console_scripts"]
+"{{ cookiecutter.project_slug }}" = "{{ cookiecutter.project_slug }}.cli:main"
+{%- endif %}
+
+[tool.poetry.dependencies]
+python = ">=3.5.2,<4"
+
+# NOTE
+# Optional (dev-)dependencies are listed on purpose within the dev section.
+# See https://github.com/python-poetry/poetry/pull/606#issuecomment-437943927 and
+#     https://github.com/python-poetry/poetry/issues/1145.
+coverage = { version = "^4.5.4", optional = true }
+flake8 = { version = "~3.7.9", optional = true }
+mypy = { version = "0.750", optional = true }
+pytest = { version = "~5.3.2", optional = true }
+
+Sphinx = { version = "~2.3.0", optional = true }
+sphinx-autodoc-typehints = { version = "~1.10.3", optional = true }
+
+[tool.poetry.extras]
+docs = ["Sphinx", "sphinx-autodoc-typehints"]
+tests = ["coverage", "flake8", "mypy", "pytest"]
+
+[tool.poetry.dev-dependencies]
+pip = "~19.2.3"
+bump2version = "~0.5.11"
+tox = "~3.14.0"
+{% if cookiecutter.command_line_interface|lower == 'click' -%}
+Click = "~7.0"{% endif %}
